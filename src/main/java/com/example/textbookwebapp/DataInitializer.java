@@ -1,0 +1,26 @@
+package com.example.textbookwebapp;
+
+import com.example.textbookwebapp.entity.Book;
+import com.example.textbookwebapp.repository.BookRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+@Component
+public class DataInitializer implements CommandLineRunner {
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Override
+    public void run(String... args) throws Exception {
+        // Create some sample books
+        if (bookRepository.count() == 0) {  // Check if the repository is empty
+            bookRepository.save(new Book("1234567890", "Author A", "Title A", "1st Edition", 100.0, true));
+            bookRepository.save(new Book("0987654321", "Author B", "Title B", "2nd Edition", 150.0, true));
+            bookRepository.save(new Book("1122334455", "Author C", "Title C", "3rd Edition", 200.0, true));
+
+            System.out.println("Database has been initialized with sample data.");
+        }
+    }
+}
