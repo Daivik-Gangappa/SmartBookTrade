@@ -1,8 +1,6 @@
 package com.example.textbookwebapp.entity;
 
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "books")
@@ -15,22 +13,21 @@ public class Book {
     private String author;
     private String title;
     private String edition;
-    private double price;
-    private boolean available;
-
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Transaction> transactions = new HashSet<>();
+    private double originalPrice;  // The price at which the library buys the book
+    private double currentPrice;   // The price at which the library sells the book
+    private boolean available;     // Whether the book is available for sale
 
     // Default constructor
     public Book() {}
 
     // Constructor with fields
-    public Book(String isbn, String author, String title, String edition, double price, boolean available) {
+    public Book(String isbn, String author, String title, String edition, double originalPrice, double currentPrice, boolean available) {
         this.isbn = isbn;
         this.author = author;
         this.title = title;
         this.edition = edition;
-        this.price = price;
+        this.originalPrice = originalPrice;
+        this.currentPrice = currentPrice;
         this.available = available;
     }
 
@@ -75,12 +72,20 @@ public class Book {
         this.edition = edition;
     }
 
-    public double getPrice() {
-        return price;
+    public double getOriginalPrice() {
+        return originalPrice;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setOriginalPrice(double originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public double getCurrentPrice() {
+        return currentPrice;
+    }
+
+    public void setCurrentPrice(double currentPrice) {
+        this.currentPrice = currentPrice;
     }
 
     public boolean isAvailable() {
@@ -90,13 +95,4 @@ public class Book {
     public void setAvailable(boolean available) {
         this.available = available;
     }
-
-    public Set<Transaction> getTransactions() {
-        return transactions;
-    }
-
-    public void setTransactions(Set<Transaction> transactions) {
-        this.transactions = transactions;
-    }
-
 }
