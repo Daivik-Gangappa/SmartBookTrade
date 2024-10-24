@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
-    List<Book> findByAvailableTrue(); // Fetch all books that are available
+    List<Book> findByAvailableTrue();  // Finds books that are marked as available
 }

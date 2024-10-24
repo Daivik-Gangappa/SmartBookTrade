@@ -20,6 +20,12 @@ public class BookController {
         return bookService.getAvailableBooks();
     }
 
+    // Get all books (available and sold)
+    @GetMapping("/all")
+    public List<Book> getAllBooks() {
+        return bookService.getAllBooks(); // Fetch both available and sold books
+    }
+
     // Buy a book from a customer (condition: normal/damaged)
     @PostMapping("/buy/{id}")
     public String buyBook(@PathVariable Long id, @RequestParam("condition") String condition) {

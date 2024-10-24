@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "books")
 public class Book {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -13,14 +14,12 @@ public class Book {
     private String author;
     private String title;
     private String edition;
-    private double originalPrice;  // The price at which the library buys the book
-    private double currentPrice;   // The price at which the library sells the book
-    private boolean available;     // Whether the book is available for sale
+    private double originalPrice;  // Price when the library buys the book
+    private double currentPrice;   // Price when the library sells the book
+    private boolean available;     // Availability status
 
-    // Default constructor
     public Book() {}
 
-    // Constructor with fields
     public Book(String isbn, String author, String title, String edition, double originalPrice, double currentPrice, boolean available) {
         this.isbn = isbn;
         this.author = author;
@@ -32,6 +31,7 @@ public class Book {
     }
 
     // Getters and Setters
+
     public Long getId() {
         return id;
     }
