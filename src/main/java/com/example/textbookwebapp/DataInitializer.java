@@ -14,13 +14,10 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        // Add sample books to the database
         if (bookRepository.count() == 0) {
-            // Initialize sample books with prices
-            bookRepository.save(new Book("1234567890", "Author A", "Title A", "1st Edition", 100.0, 105.0, true));
-            bookRepository.save(new Book("0987654321", "Author B", "Title B", "2nd Edition", 150.0, 157.5, true));
-            bookRepository.save(new Book("1122334455", "Author C", "Title C", "3rd Edition", 200.0, 210.0, true));
-
-            System.out.println("Database has been initialized with sample data.");
+            bookRepository.save(new Book("1234567890", "Author A", "Sherlock Holmes", "2nd Edition", 100.0, 100.0, 00.0, 0, true, 1L));
+            bookRepository.save(new Book("0987654321", "Author B", "Moby Dick", "1st Edition", 150.0, 150.0, 00.0, 0, true, 2L));
         }
     }
 }

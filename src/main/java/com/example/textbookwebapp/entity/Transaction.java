@@ -1,30 +1,39 @@
 package com.example.textbookwebapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "transactions")
 public class Transaction {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
+    @JoinColumn(name = "book_id")
+    @JsonIgnoreProperties({"transactions"})
     private Book book;
 
-    private LocalDateTime transactionDate;
-    private double price;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    // Default constructor
+    private double price;
+    private String transactionType; // "BUY" or "SELL"
+    private LocalDateTime dateTime;
+
     public Transaction() {}
 
-    // Constructor
-    public Transaction(Book book, double price) {
+    public Transaction(Book book, User user, double price, String transactionType, LocalDateTime dateTime) {
         this.book = book;
+        this.user = user;
         this.price = price;
-        this.transactionDate = LocalDateTime.now();
+        this.transactionType = transactionType;
+        this.dateTime = dateTime;
     }
 
     // Getters and Setters
@@ -44,12 +53,12 @@ public class Transaction {
         this.book = book;
     }
 
-    public LocalDateTime getTransactionDate() {
-        return transactionDate;
+    public User getUser() {
+        return user;
     }
 
-    public void setTransactionDate(LocalDateTime transactionDate) {
-        this.transactionDate = transactionDate;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public double getPrice() {
@@ -60,4 +69,19 @@ public class Transaction {
         this.price = price;
     }
 
+    public String getTransactionType() {
+        return transactionType;
+    }
+
+    public void setTransactionType(String transactionType) {
+        this.transactionType = transactionType;
+    }
+
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
 }

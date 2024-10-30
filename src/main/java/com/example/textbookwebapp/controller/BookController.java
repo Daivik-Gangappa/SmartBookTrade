@@ -23,7 +23,7 @@ public class BookController {
     // Get all books (available and sold)
     @GetMapping("/all")
     public List<Book> getAllBooks() {
-        return bookService.getAllBooks(); // Fetch both available and sold books
+        return bookService.getAllBooks();
     }
 
     // Buy a book from a customer (condition: normal/damaged)
