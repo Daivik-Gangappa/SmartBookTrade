@@ -1,60 +1,95 @@
 package com.example.textbookwebapp.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "books")
-@JsonIgnoreProperties({"transactions"})
 public class Book {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String isbn;
     private String author;
     private String title;
     private String edition;
+    private double originalPrice;
+    private double currentPrice;
+    private double usedTextBookPrice;
+    private double renovationPrice;
+    private boolean available;
+    private int typeId;
 
-    // New fields
-    private double originalPrice;     // Price of new book
-    private double currentPrice;      // Selling price after renovation
-    private double usedTextBookPrice; // Price when buying a used book from a student
-    private double renovationPrice;   // Reduction price based on condition
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transaction> transactions = new ArrayList<>();
 
-    private boolean available;        // Availability status (true if available for sale)
+    // Builder pattern for creating Book instances
+    public static class BookBuilder {
+        private String isbn;
+        private String author;
+        private String title;
+        private String edition;
+        private double originalPrice;
+        private boolean available;
+        private int typeId;
 
-    private Long typeId;              // Identifier for grouping similar book types
+        public BookBuilder setIsbn(String isbn) {
+            this.isbn = isbn;
+            return this;
+        }
 
-    // Transactions related to this book
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Transaction> transactions;
+        public BookBuilder setAuthor(String author) {
+            this.author = author;
+            return this;
+        }
 
-    // Constructors, Getters, and Setters
+        public BookBuilder setTitle(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public BookBuilder setEdition(String edition) {
+            this.edition = edition;
+            return this;
+        }
+
+        public BookBuilder setOriginalPrice(double originalPrice) {
+            this.originalPrice = originalPrice;
+            return this;
+        }
+
+        public BookBuilder setTypeId(int typeId) {
+            this.typeId = typeId;
+            return this;
+        }
+
+        public BookBuilder setAvailable(boolean available) {
+            this.available = available;
+            return this;
+        }
+
+        public Book build() {
+            Book book = new Book();
+            book.isbn = this.isbn;
+            book.author = this.author;
+            book.title = this.title;
+            book.edition = this.edition;
+            book.originalPrice = this.originalPrice;
+            book.currentPrice = this.originalPrice;
+            book.usedTextBookPrice = this.originalPrice; // Set initial used textbook price to original price
+            book.available = this.available;
+            book.typeId = this.typeId;
+            return book;
+        }
+    }
+
+    // Default constructor required for JPA
     public Book() {}
 
-    public Book(String isbn, String author, String title, String edition, double originalPrice, double currentPrice, double usedTextBookPrice, double renovationPrice, boolean available, Long typeId) {
-        this.isbn = isbn;
-        this.author = author;
-        this.title = title;
-        this.edition = edition;
-        this.originalPrice = originalPrice;
-        this.currentPrice = currentPrice;
-        this.usedTextBookPrice = usedTextBookPrice;
-        this.renovationPrice = renovationPrice;
-        this.available = available;
-        this.typeId = typeId;
-    }
+    // Getters and setters
 
-    // Add all necessary getters and setters
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getIsbn() {
@@ -129,11 +164,11 @@ public class Book {
         this.available = available;
     }
 
-    public Long getTypeId() {
+    public int getTypeId() {
         return typeId;
     }
 
-    public void setTypeId(Long typeId) {
+    public void setTypeId(int typeId) {
         this.typeId = typeId;
     }
 
@@ -143,5 +178,10 @@ public class Book {
 
     public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
+    }
+
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
+        transaction.setBook(this);
     }
 }

@@ -1,13 +1,14 @@
 package com.example.textbookwebapp.service;
 
 import com.example.textbookwebapp.entity.Book;
-import com.example.textbookwebapp.entity.Transaction;
+import com.example.textbookwebapp.observer.Observer;
 import com.example.textbookwebapp.repository.BookRepository;
 import com.example.textbookwebapp.repository.TransactionRepository;
+import com.example.textbookwebapp.strategy.PricingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,94 +21,100 @@ public class BookService {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    // Fetch all available books
+    private List<Observer> observers = new ArrayList<>();
+
+    public void addObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    private void notifyObservers(String message) {
+        for (Observer observer : observers) {
+            observer.update(message);
+        }
+    }
+
+    // Method to fetch all available books in inventory
     public List<Book> getAvailableBooks() {
         return bookRepository.findByAvailableTrue();
     }
 
-    // Fetch all books (available and sold)
+    // Method to fetch all books in the database (both available and sold)
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
     }
 
-    // Buy a book from a student (update renovation price, keep current price unchanged)
-    public String buyBook(Long id, String condition) {
+    // Add a new book to the inventory
+    public String addNewBookToInventory(Book book) {
+        book.setCurrentPrice(book.getOriginalPrice());  // Set current price to original price for new book
+        book.setAvailable(true);
+        // Ensure usedTextBookPrice is not set initially
+        book.setUsedTextBookPrice(0.0);
+        bookRepository.save(book);
+        notifyObservers("New book added to inventory with ID: " + book.getId());
+        return "New book added to inventory!";
+    }
+
+    // Buy a book back from a customer, adjusting renovation and current price
+    public String buyBook(Long id, PricingStrategy strategy) {
         Optional<Book> optionalBook = bookRepository.findById(id);
         if (optionalBook.isPresent()) {
             Book book = optionalBook.get();
+
             if (!book.isAvailable()) {
-                double usedTextBookPrice = book.getUsedTextBookPrice();
-                double renovationPrice = 0.0;
+                double renovationCharge;
+                // Calculate the renovation charge based on the strategy
+                renovationCharge =book.getUsedTextBookPrice()- strategy.calculatePrice(book);
 
-                // Calculate renovation price based on condition
-                if ("damaged".equalsIgnoreCase(condition)) {
-                    renovationPrice = usedTextBookPrice * 0.20; // 20% reduction
-                } else {
-                    renovationPrice = usedTextBookPrice * 0.15; // 15% reduction
-                }
+                // Set the renovation price
+                book.setRenovationPrice(renovationCharge);
 
-                // The price at which store buys back the book from the student
-                double buyBackPrice = usedTextBookPrice - renovationPrice;
+                // Calculate the new current price for resale (10% reduction)
+                book.setCurrentPrice(book.getUsedTextBookPrice() * 0.90);
 
-                // Update renovationPrice
-                book.setRenovationPrice(renovationPrice);
-
-                // Keep currentPrice unchanged (will be updated during resale)
-                // book.setCurrentPrice(usedTextBookPrice);
-
-                // Mark the book as available again
+                // Mark the book as available in inventory
                 book.setAvailable(true);
 
+                // Save the updated book details to the repository
                 bookRepository.save(book);
-
-                // Save the transaction
-                Transaction transaction = new Transaction(book, null, buyBackPrice, "BUY", LocalDateTime.now());
-                transactionRepository.save(transaction);
-
-                return "Book bought from the student and added to inventory!";
+                notifyObservers("Book bought back from student with ID: " + id);
+                return "Book bought back from student and added to inventory!";
             } else {
-                return "This book is already in inventory.";
+                return "Book is already in inventory.";
             }
-        } else {
-            return "Book not found.";
         }
+        return "Book not found.";
     }
 
-    // Sell a book to a customer (reduce price by 10% from usedTextBookPrice)
-    public String sellBook(Long id) {
+    public String sellBook(Long id, PricingStrategy strategy) {
         Optional<Book> optionalBook = bookRepository.findById(id);
         if (optionalBook.isPresent()) {
             Book book = optionalBook.get();
-            if (book.isAvailable()) {
-                double newSellingPrice = 0.0;
 
+            if (book.isAvailable()) {
+                double sellPrice = strategy.calculatePrice(book);
+
+                // Update the usedTextBookPrice to the last selling price (for future buybacks)
                 if (book.getUsedTextBookPrice() == 0.0) {
-                    // New book
-                    newSellingPrice = book.getOriginalPrice();
+                    book.setUsedTextBookPrice(book.getOriginalPrice()); // First time sale
                 } else {
-                    // Used book, decrease price by 10% from usedTextBookPrice
-                    newSellingPrice = book.getUsedTextBookPrice() * 0.90;
+                    book.setUsedTextBookPrice(book.getCurrentPrice()); // Subsequent sales
                 }
 
-                // Update currentPrice and usedTextBookPrice
-                book.setCurrentPrice(newSellingPrice);
-                book.setUsedTextBookPrice(newSellingPrice);
+                // Set the current price for the sale
+                book.setCurrentPrice(sellPrice);
 
-                // Mark as sold
+                // Mark the book as sold
                 book.setAvailable(false);
 
+                // Save the updated book details to the repository
                 bookRepository.save(book);
-
-                // Save the transaction
-                Transaction transaction = new Transaction(book, null, newSellingPrice, "SELL", LocalDateTime.now());
-                transactionRepository.save(transaction);
-
-                return "Book sold to the customer!";
+                notifyObservers("Book sold with ID: " + id);
+                return "Book sold!";
             } else {
-                return "This book is already sold.";
+                return "Book is not available for sale.";
             }
-        } else {
-            return "Book not found.";
         }
+        return "Book not found.";
     }
+
 }

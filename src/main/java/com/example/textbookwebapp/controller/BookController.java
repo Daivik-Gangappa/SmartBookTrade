@@ -1,6 +1,10 @@
 package com.example.textbookwebapp.controller;
 
 import com.example.textbookwebapp.service.BookService;
+import com.example.textbookwebapp.service.BuyBookCommand;
+import com.example.textbookwebapp.service.SellBookCommand;
+import com.example.textbookwebapp.strategy.NormalWearPricing;
+import com.example.textbookwebapp.strategy.ExcessiveWearPricing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,27 +18,32 @@ public class BookController {
     @Autowired
     private BookService bookService;
 
-    // Get all available books
     @GetMapping("/inventory")
     public List<Book> getAvailableBooks() {
         return bookService.getAvailableBooks();
     }
 
-    // Get all books (available and sold)
     @GetMapping("/all")
     public List<Book> getAllBooks() {
         return bookService.getAllBooks();
     }
 
-    // Buy a book from a customer (condition: normal/damaged)
     @PostMapping("/buy/{id}")
     public String buyBook(@PathVariable Long id, @RequestParam("condition") String condition) {
-        return bookService.buyBook(id, condition);
+        BuyBookCommand buyCommand;
+        if ("normal".equalsIgnoreCase(condition)) {
+            buyCommand = new BuyBookCommand(bookService, id, new NormalWearPricing());
+        } else {
+            buyCommand = new BuyBookCommand(bookService, id, new ExcessiveWearPricing());
+        }
+        buyCommand.execute();
+        return "Book bought from the student!";
     }
 
-    // Sell a book to a customer (add profit)
     @PostMapping("/sell/{id}")
     public String sellBook(@PathVariable Long id) {
-        return bookService.sellBook(id);
+        SellBookCommand sellCommand = new SellBookCommand(bookService, id, new NormalWearPricing());
+        sellCommand.execute();
+        return "Book sold to the customer!";
     }
 }
