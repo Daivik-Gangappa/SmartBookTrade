@@ -18,8 +18,11 @@ public class Book {
     private double usedTextBookPrice;
     private double renovationPrice;
     private boolean available;
-    private int typeId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BookType type = BookType.TEXTBOOK;
+    
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> transactions = new ArrayList<>();
 
@@ -31,7 +34,7 @@ public class Book {
         private String edition;
         private double originalPrice;
         private boolean available;
-        private int typeId;
+        private BookType type;
 
         public BookBuilder setIsbn(String isbn) {
             this.isbn = isbn;
@@ -58,8 +61,8 @@ public class Book {
             return this;
         }
 
-        public BookBuilder setTypeId(int typeId) {
-            this.typeId = typeId;
+        public BookBuilder setType(BookType type) {
+            this.type = type;
             return this;
         }
 
@@ -75,10 +78,9 @@ public class Book {
             book.title = this.title;
             book.edition = this.edition;
             book.originalPrice = this.originalPrice;
-            book.currentPrice = this.originalPrice;
-            book.usedTextBookPrice = this.originalPrice; // Set initial used textbook price to original price
+            book.currentPrice = this.originalPrice;  // Set initial current price to original price
             book.available = this.available;
-            book.typeId = this.typeId;
+            book.type = this.type;  // Set the type using BookType
             return book;
         }
     }
@@ -86,7 +88,7 @@ public class Book {
     // Default constructor required for JPA
     public Book() {}
 
-    // Getters and setters
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -164,12 +166,12 @@ public class Book {
         this.available = available;
     }
 
-    public int getTypeId() {
-        return typeId;
+    public BookType getType() {
+        return type;
     }
 
-    public void setTypeId(int typeId) {
-        this.typeId = typeId;
+    public void setType(BookType type) {
+        this.type = type;
     }
 
     public List<Transaction> getTransactions() {

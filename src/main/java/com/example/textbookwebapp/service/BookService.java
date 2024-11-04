@@ -1,6 +1,7 @@
 package com.example.textbookwebapp.service;
 
 import com.example.textbookwebapp.entity.Book;
+import com.example.textbookwebapp.entity.BookType;
 import com.example.textbookwebapp.observer.Observer;
 import com.example.textbookwebapp.repository.BookRepository;
 import com.example.textbookwebapp.repository.TransactionRepository;
@@ -42,7 +43,14 @@ public class BookService {
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
     }
-
+ // In BookService.java
+    public List<Book> getBooksByType(BookType type) {
+        return bookRepository.findByType(type);
+    }
+    public List<Book> getBooksByTitle(String title) {
+		// TODO Auto-generated method stub
+    	return bookRepository.findByTitleContainingIgnoreCase(title);
+	}
     // Add a new book to the inventory
     public String addNewBookToInventory(Book book) {
         book.setCurrentPrice(book.getOriginalPrice());  // Set current price to original price for new book
@@ -52,7 +60,7 @@ public class BookService {
         bookRepository.save(book);
         notifyObservers("New book added to inventory with ID: " + book.getId());
         return "New book added to inventory!";
-    }
+    } 
 
     // Buy a book back from a customer, adjusting renovation and current price
     public String buyBook(Long id, PricingStrategy strategy) {
@@ -116,5 +124,7 @@ public class BookService {
         }
         return "Book not found.";
     }
+
+	
 
 }
