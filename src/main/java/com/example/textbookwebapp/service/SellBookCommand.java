@@ -14,7 +14,7 @@ public class SellBookCommand implements Command {
     }
 
     @Override
-    public void execute() {
-        bookService.sellBook(bookId, pricingStrategy);
+    public String execute() {
+        return bookService.sellBook(bookId, pricingStrategy);
     }
 }

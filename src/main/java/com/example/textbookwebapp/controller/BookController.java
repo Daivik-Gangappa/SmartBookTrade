@@ -2,7 +2,7 @@ package com.example.textbookwebapp.controller;
 
 import com.example.textbookwebapp.service.BookService;
 import com.example.textbookwebapp.service.BuyBookCommand;
-import com.example.textbookwebapp.service.SellBookCommand;
+import com.example.textbookwebapp.strategy.PricingStrategy;
 import com.example.textbookwebapp.strategy.NormalWearPricing;
 import com.example.textbookwebapp.strategy.ExcessiveWearPricing;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +39,19 @@ public class BookController {
         BuyBookCommand buyCommand;
         if ("normal".equalsIgnoreCase(condition)) {
             buyCommand = new BuyBookCommand(bookService, id, new NormalWearPricing());
-        } else {
+        } 
+        else {
             buyCommand = new BuyBookCommand(bookService, id, new ExcessiveWearPricing());
         }
-        buyCommand.execute();
-        return "Book bought from the student!";
+        String result = buyCommand.execute();
+        return result;
     }
-    
+
+    @PostMapping("/buy-used")
+    public String sellUsedBook(@RequestBody Book book) {
+        return bookService.BuyUsed(book);
+    }
+
     @GetMapping("/type/{type}")
     public List<Book> getBooksByType(@PathVariable BookType type) {
         return bookService.getBooksByType(type);
@@ -56,11 +62,11 @@ public class BookController {
         return bookService.getBooksByTitle(title);
     }
    
-
     @PostMapping("/sell/{id}")
     public String sellBook(@PathVariable Long id) {
-        SellBookCommand sellCommand = new SellBookCommand(bookService, id, new NormalWearPricing());
-        sellCommand.execute();
-        return "Book sold to the customer!";
+        PricingStrategy pricingStrategy = new NormalWearPricing();
+        return bookService.sellBook(id, pricingStrategy);
     }
+
+    
 }

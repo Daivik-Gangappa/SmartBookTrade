@@ -23,7 +23,7 @@ public class DataInitializer implements CommandLineRunner {
                     .setEdition("2nd Edition")
                     .setOriginalPrice(100.0)
                     .setAvailable(true)
-                    .setType(BookType.TEXTBOOK)  // Use BookType enum
+                    .setType(BookType.TEXTBOOK)  
                     .build());
         }
     }

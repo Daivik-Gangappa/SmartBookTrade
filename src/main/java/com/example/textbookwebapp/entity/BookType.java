@@ -6,7 +6,8 @@ public enum BookType {
     FICTION(3),
     NON_FICTION(4),
     SCIENCE(5),
-    HISTORY(6);
+    HISTORY(6),
+    SPORTS(7);
 
     private final int id;
 

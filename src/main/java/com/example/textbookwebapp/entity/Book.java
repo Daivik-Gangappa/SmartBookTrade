@@ -78,14 +78,14 @@ public class Book {
             book.title = this.title;
             book.edition = this.edition;
             book.originalPrice = this.originalPrice;
-            book.currentPrice = this.originalPrice;  // Set initial current price to original price
+            book.currentPrice = this.originalPrice;
             book.available = this.available;
-            book.type = this.type;  // Set the type using BookType
+            book.type = this.type;  //type using BookType(Predefined Types)
             return book;
         }
     }
 
-    // Default constructor required for JPA
+    // Default constructor
     public Book() {}
 
     // Getters and Setters
