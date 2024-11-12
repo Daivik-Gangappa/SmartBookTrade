@@ -23,6 +23,7 @@ public class Book {
     @Column(nullable = false)
     private BookType type = BookType.TEXTBOOK;
     
+
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> transactions = new ArrayList<>();
 
@@ -186,4 +187,5 @@ public class Book {
         transactions.add(transaction);
         transaction.setBook(this);
     }
+ 
 }

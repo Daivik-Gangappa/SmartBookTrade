@@ -2,6 +2,7 @@ package com.example.textbookwebapp.service;
 
 import com.example.textbookwebapp.entity.Book;
 import com.example.textbookwebapp.entity.BookType;
+import com.example.textbookwebapp.entity.Transaction;
 import com.example.textbookwebapp.observer.Observer;
 import com.example.textbookwebapp.repository.BookRepository;
 import com.example.textbookwebapp.repository.TransactionRepository;
@@ -10,6 +11,7 @@ import com.example.textbookwebapp.strategy.PricingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -87,7 +89,6 @@ public class BookService {
             return "Book added to inventory as a used book! Buyback price: " + buybackPrice;
         }
     }
-    
     public String buyBook(Long id, PricingStrategy strategy) {
         Optional<Book> optionalBook = bookRepository.findById(id);
 
@@ -104,12 +105,17 @@ public class BookService {
             book.setCurrentPrice(book.getUsedTextBookPrice() * 0.90); // current price with a 10% reduction for resale            
             book.setAvailable(true);// Mark the book as available in inventory
             bookRepository.save(book);// updating details to repository
+            
+            Transaction transaction = new Transaction(book, null, renovationCharge, "BUY", LocalDateTime.now());
+            transactionRepository.save(transaction);
+            
             notifyObservers("Book bought back from student with ID: " + id);
             return "Book bought back from student and added to inventory!";
         }
 
         return "Book not found.";
     }
+
 
     public String sellBook(Long id, PricingStrategy strategy) {
         Optional<Book> optionalBook = bookRepository.findById(id);
@@ -121,21 +127,29 @@ public class BookService {
                 book.setCurrentPrice(sellPrice);// Set the current price for the sale
 
                 // Updating the usedTextBookPrice to the last selling price
-                if (book.getUsedTextBookPrice() == 0.0) {
-                    book.setUsedTextBookPrice(book.getOriginalPrice()); // First-time sale
-                }
-                else {
-                    book.setUsedTextBookPrice(book.getCurrentPrice()); // Subsequent sales
-                }
+				/*
+				 * if (book.getUsedTextBookPrice() == 0.0) {
+				 * book.setUsedTextBookPrice(book.getOriginalPrice()); // First-time sale } else
+				 * { book.setUsedTextBookPrice(book.getCurrentPrice()); // Subsequent sales }
+				 */
+                book.setUsedTextBookPrice(book.getCurrentPrice());
                 book.setAvailable(false);
+
                 bookRepository.save(book);
+                
+                Transaction transaction = new Transaction(book, null, sellPrice, "SELL", LocalDateTime.now());
+                transactionRepository.save(transaction);
+                
                 notifyObservers("Book sold with ID: " + id);
                 return "Book sold at price: " + sellPrice;
-            } 
-            else {
+            } else {
                 return "Book is not available for sale.";
             }
         }
         return "Book not found.";
     }
+
+
+
+
 }
